@@ -32,7 +32,13 @@ class Plotjuggler < Formula
 
     # Manual install since cmake --install seems to fail
     bin.install "build/bin/plotjuggler"
-    bin.install Dir["build/bin/*.dylib"]
+
+    # Install plugins - .dylib on macOS, .so on Linux
+    if OS.mac?
+      bin.install Dir["build/bin/*.dylib"]
+    else
+      bin.install Dir["build/bin/*.so"]
+    end
 
     # install desktop files
     (share/"applications").install "PlotJuggler.desktop" if File.exist?("PlotJuggler.desktop")
