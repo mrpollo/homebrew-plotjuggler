@@ -35,11 +35,17 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: brew install-bundler-gems
 
-      - name: Tap this repository
+      - name: Set up tap
         run: |
+          # Remove any existing tap and create a fresh one from the local checkout
           USER_REPO="${{ github.repository }}"
           TAP_NAME="${USER_REPO/\/homebrew-/\/}"
-          brew tap --force "${TAP_NAME}" "${GITHUB_WORKSPACE}"
+
+          # Remove existing tap if it exists
+          brew untap "${TAP_NAME}" 2>/dev/null || true
+
+          # Tap from the local workspace
+          brew tap "${TAP_NAME}" "${GITHUB_WORKSPACE}"
 
       - name: Build bottle
         run: |
