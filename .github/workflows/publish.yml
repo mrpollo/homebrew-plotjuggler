@@ -34,32 +34,14 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: brew install-bundler-gems
 
-      - name: Set up tap
-        run: |
-          # Extract owner and tap name
-          REPO_OWNER="${{ github.repository_owner }}"
-          TAP_NAME="${REPO_OWNER}/plotjuggler"
-
-          # Remove existing tap if it exists
-          brew untap "${TAP_NAME}" 2>/dev/null || true
-
-          # Tap from the local workspace
-          brew tap "${TAP_NAME}" "${GITHUB_WORKSPACE}"
-
       - name: Build bottle
         run: |
+          # The Homebrew action automatically taps this repository
           REPO_OWNER="${{ github.repository_owner }}"
           TAP_NAME="${REPO_OWNER}/plotjuggler"
 
           brew install --build-bottle --verbose "${TAP_NAME}/plotjuggler"
           brew bottle --json --no-rebuild "${TAP_NAME}/plotjuggler"
-
-      - name: Cleanup tap
-        if: always()
-        run: |
-          REPO_OWNER="${{ github.repository_owner }}"
-          TAP_NAME="${REPO_OWNER}/plotjuggler"
-          brew untap "${TAP_NAME}" 2>/dev/null || true
 
       - name: Upload bottles as artifact
         uses: actions/upload-artifact@v4
