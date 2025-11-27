@@ -7,6 +7,7 @@ class Plotjuggler < Formula
   head "https://github.com/facontidavide/PlotJuggler.git", branch: "main"
 
   depends_on "cmake" => :build
+  depends_on "fmt"
   depends_on "mosquitto"
   depends_on "protobuf"
   depends_on "qt@5"
@@ -16,6 +17,7 @@ class Plotjuggler < Formula
     args = %W[
       -DCMAKE_INSTALL_PREFIX=#{prefix}
       -DCMAKE_DISABLE_FIND_PACKAGE_Arrow=ON
+      -DFETCHCONTENT_FULLY_DISCONNECTED=ON
     ]
 
     # Set Qt5 and ZeroMQ paths
