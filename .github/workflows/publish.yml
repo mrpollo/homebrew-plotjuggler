@@ -54,6 +54,13 @@ jobs:
           brew install --build-bottle --verbose "${TAP_NAME}/plotjuggler"
           brew bottle --json --no-rebuild "${TAP_NAME}/plotjuggler"
 
+      - name: Cleanup tap
+        if: always()
+        run: |
+          REPO_OWNER="${{ github.repository_owner }}"
+          TAP_NAME="${REPO_OWNER}/plotjuggler"
+          brew untap "${TAP_NAME}" 2>/dev/null || true
+
       - name: Upload bottles as artifact
         uses: actions/upload-artifact@v4
         with:
