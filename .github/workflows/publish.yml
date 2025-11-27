@@ -10,7 +10,6 @@ jobs:
     strategy:
       matrix:
         os:
-          - ubuntu-22.04
           - macos-14
           - macos-15
     runs-on: ${{ matrix.os }}
@@ -89,9 +88,8 @@ jobs:
             Built for:
             - macOS 14 (Sonoma) - Apple Silicon
             - macOS 15 (Sequoia) - Apple Silicon
-            - Ubuntu 22.04 (Linux) - x86_64
 
-            **Note:** Intel Mac users will need to build from source.
+            **Note:** Intel Mac and Linux users will need to build from source.
 
             Install with:
             ```bash
