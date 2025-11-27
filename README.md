@@ -42,12 +42,11 @@ plotjuggler
 
 Pre-compiled bottles are automatically built and distributed for:
 
-- **macOS 13** (Ventura) - Intel
 - **macOS 14** (Sonoma) - Apple Silicon
 - **macOS 15** (Sequoia) - Apple Silicon
 - **Ubuntu 22.04** - Linux x86_64
 
-Bottles provide fast installation without needing to compile from source.
+**Note:** Intel Mac users will need to build from source. The formula is tested on macOS 13 (Intel) to ensure compatibility.
 
 ## Usage
 
