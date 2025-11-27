@@ -36,9 +36,9 @@ jobs:
 
       - name: Set up tap
         run: |
-          # Remove any existing tap and create a fresh one from the local checkout
-          USER_REPO="${{ github.repository }}"
-          TAP_NAME="${USER_REPO/\/homebrew-/\/}"
+          # Extract owner and tap name
+          REPO_OWNER="${{ github.repository_owner }}"
+          TAP_NAME="${REPO_OWNER}/plotjuggler"
 
           # Remove existing tap if it exists
           brew untap "${TAP_NAME}" 2>/dev/null || true
@@ -48,8 +48,9 @@ jobs:
 
       - name: Build bottle
         run: |
-          USER_REPO="${{ github.repository }}"
-          TAP_NAME="${USER_REPO/\/homebrew-/\/}"
+          REPO_OWNER="${{ github.repository_owner }}"
+          TAP_NAME="${REPO_OWNER}/plotjuggler"
+
           brew install --build-bottle --verbose "${TAP_NAME}/plotjuggler"
           brew bottle --json --no-rebuild "${TAP_NAME}/plotjuggler"
 
