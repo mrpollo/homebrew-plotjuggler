@@ -1,0 +1,104 @@
+name: Build and Publish Bottles
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  build-bottles:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-22.04
+          - macos-13
+          - macos-14
+          - macos-15
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Cache Homebrew Bundler RubyGems
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.set-up-homebrew.outputs.gems-path }}
+          key: ${{ runner.os }}-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
+          restore-keys: ${{ runner.os }}-rubygems-
+
+      - name: Install Homebrew Bundler RubyGems
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: brew install-bundler-gems
+
+      - name: Tap this repository
+        run: |
+          USER_REPO="${{ github.repository }}"
+          TAP_NAME="${USER_REPO/\/homebrew-/\/}"
+          brew tap --force "${TAP_NAME}" "${GITHUB_WORKSPACE}"
+
+      - name: Build bottle
+        run: |
+          USER_REPO="${{ github.repository }}"
+          TAP_NAME="${USER_REPO/\/homebrew-/\/}"
+          brew install --build-bottle --verbose "${TAP_NAME}/plotjuggler"
+          brew bottle --json --no-rebuild "${TAP_NAME}/plotjuggler"
+
+      - name: Upload bottles as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bottles_${{ matrix.os }}
+          path: |
+            *.bottle.*
+            *.json
+
+  create-release:
+    needs: build-bottles
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all bottle artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: bottles
+
+      - name: List downloaded bottles
+        run: |
+          echo "Downloaded bottles:"
+          find bottles -type f
+
+      - name: Prepare bottles for upload
+        run: |
+          # Flatten the directory structure for easier uploading
+          mkdir -p release-files
+          find bottles -name '*.bottle.*' -exec mv {} release-files/ \;
+          find bottles -name '*.json' -exec mv {} release-files/ \;
+          ls -lh release-files/
+
+      - name: Create draft release with bottles
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          name: PlotJuggler ${{ github.ref_name }}
+          body: |
+            Bottles for PlotJuggler ${{ github.ref_name }}
+
+            Built for:
+            - macOS 13 (Intel)
+            - macOS 14 (Apple Silicon)
+            - macOS 15 (Apple Silicon)
+            - Ubuntu 22.04 (Linux)
+
+            Install with:
+            ```bash
+            brew install ${{ github.repository_owner }}/plotjuggler/plotjuggler
+            ```
+          files: release-files/*
